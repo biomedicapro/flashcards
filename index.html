@@ -160,6 +160,34 @@
             margin: 5px 0;
             color: #7F8C8D;
         }
+        /* Botones de clasificación */
+        .classification-options {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        .classification-options button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            color: #fff;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+        }
+        .classification-options button i {
+            margin-right: 8px;
+        }
+        .classification-options .easy {
+            background-color: #2ECC71;
+        }
+        .classification-options .medium {
+            background-color: #F1C40F;
+        }
+        .classification-options .hard {
+            background-color: #E74C3C;
+        }
         /* Estilos para dispositivos móviles */
         @media (max-width: 768px) {
             .profile-list, .set-list {
@@ -224,16 +252,16 @@
         <!-- Botón para revisar tarjetas clasificadas -->
         <h3>Revisar tarjetas clasificadas</h3>
         <div class="classification-options">
-            <button onclick="reviewClassified('Difícil')"><i class="fas fa-frown"></i> Difíciles</button>
-            <button onclick="reviewClassified('Medio')"><i class="fas fa-meh"></i> Medias</button>
-            <button onclick="reviewClassified('Fácil')"><i class="fas fa-smile"></i> Fáciles</button>
+            <button class="hard" onclick="reviewClassified('Difícil')"><i class="fas fa-frown"></i> Difíciles</button>
+            <button class="medium" onclick="reviewClassified('Medio')"><i class="fas fa-meh"></i> Medias</button>
+            <button class="easy" onclick="reviewClassified('Fácil')"><i class="fas fa-smile"></i> Fáciles</button>
         </div>
     </div>
 
     <script>
         // Variables globales
         let profiles = JSON.parse(localStorage.getItem('profiles')) || [];
-        let currentProfile = null;
+        let currentProfile = JSON.parse(localStorage.getItem('currentProfile')) || null;
 
         // Función para mostrar perfiles existentes
         function loadProfiles() {
@@ -334,6 +362,7 @@
             if (currentProfile) {
                 localStorage.setItem('selectedSet', setName);
                 localStorage.setItem('currentProfile', JSON.stringify(currentProfile));
+                localStorage.setItem('returnToProfile', true);
                 // Redirigir y solicitar pantalla completa
                 window.location.href = 'index2.html';
             }
@@ -343,6 +372,8 @@
         function reviewClassified(level) {
             if (currentProfile) {
                 localStorage.setItem('reviewLevel', level);
+                localStorage.setItem('currentProfile', JSON.stringify(currentProfile));
+                localStorage.setItem('returnToProfile', true);
                 window.location.href = 'index2.html';
             }
         }
@@ -359,7 +390,11 @@
 
         // Inicialización
         window.onload = () => {
-            loadProfiles();
+            if (currentProfile) {
+                showMainSection();
+            } else {
+                loadProfiles();
+            }
         };
     </script>
 </body>
