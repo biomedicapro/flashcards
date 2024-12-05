@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Estudio de Flashcards Médicas</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Incluir la biblioteca GSAP para animaciones -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <!-- Incluir Font Awesome para íconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Estilos generales */
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f4f8;
+            color: #333;
+        }
+        header {
+            background-color: #5DADE2;
+            color: #fff;
+            padding: 15px;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: normal;
+        }
+        .back-button {
+            position: absolute;
+            left: 15px;
+            top: 15px;
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 18px;
+            cursor: pointer;
+        }
+        .back-button i {
+            margin-right: 5px;
+        }
+        /* Barra de progreso */
+        .progress-bar {
+            width: 100%;
+            background-color: #e0e0e0;
+            height: 10px;
+            position: fixed;
+            top: 60px;
+            left: 0;
+        }
+        .progress {
+            width: 0%;
+            height: 100%;
+            background-color: #5DADE2;
+        }
+        /* Contenedor de flashcards */
+        .flashcard-container {
+            margin-top: 80px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: calc(100vh - 80px);
+            overflow: hidden;
+            position: relative;
+        }
+        .flashcard {
+            width: 300px;
+            height: 400px;
+            perspective: 1000px;
+            position: absolute;
+        }
+        .card {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            text-align: center;
+            border-radius: 10px;
+            background: linear-gradient(to bottom, #fff, #f0f0f0);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            backface-visibility: hidden;
+            transition: transform 0.8s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .card h2 {
+            margin: 0;
+            font-size: 22px;
+            color: #2C3E50;
+        }
+        .front {
+            background-color: #3498DB;
+            color: #fff;
+        }
+        .back {
+            background-color: #2ECC71;
+            color: #fff;
+            transform: rotateY(180deg);
+        }
+        .explanation {
+            background-color: #9B59B6;
+            color: #fff;
+            transform: rotateY(-180deg);
+        }
+        /* Clasificación */
+        .classification {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+        }
+        .classification button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            color: #fff;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+        }
+        .classification button i {
+            margin-right: 8px;
+        }
+        .easy {
+            background-color: #2ECC71;
+        }
+        .medium {
+            background-color: #F1C40F;
+        }
+        .hard {
+            background-color: #E74C3C;
+        }
+        /* Indicador de cara */
+        .face-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0,0,0,0.5);
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+        }
+        .face-indicator i {
+            margin-right: 5px;
+        }
+        /* Estilos para dispositivos móviles */
+        @media (max-width: 768px) {
+            .flashcard {
+                width: 90%;
+                height: 60%;
+            }
+            .classification {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <button class="back-button" onclick="goBack()"><i class="fas fa-arrow-left"></i> Volver</button>
+        <h1><i class="fas fa-book-reader"></i> Estudio de Flashcards</h1>
+    </header>
+    <div class="progress-bar">
+        <div class="progress" id="progress"></div>
+    </div>
+    <div class="flashcard-container" id="flashcard-container">
+        <!-- Las flashcards se generarán dinámicamente -->
+    </div>
+    <div class="classification">
+        <button class="easy" onclick="classifyCard('Fácil')"><i class="fas fa-smile"></i> Fácil</button>
+        <button class="medium" onclick="classifyCard('Medio')"><i class="fas fa-meh"></i> Medio</button>
+        <button class="hard" onclick="classifyCard('Difícil')"><i class="fas fa-frown"></i> Difícil</button>
+    </div>
+
+    <script>
+        // Variables globales
+        let flashcards = [];
+        let currentCardIndex = 0;
+        let currentFace = 0; // 0: Pregunta, 1: Respuesta, 2: Explicación
+        let classifications = JSON.parse(localStorage.getItem('classifications')) || {};
+        let touchStartY = 0;
+        let touchEndY = 0;
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        // Datos cargados desde el archivo CSV seleccionado
+        let selectedFile = localStorage.getItem('selectedFile') || 'Anatomía.csv';
+        // Simulación de carga de datos desde el archivo seleccionado
+        function loadDataFromCSV(fileName) {
+            // Aquí puedes implementar la carga real desde un archivo CSV
+            // Por ahora, usaremos datos de ejemplo
+            if (fileName === 'Anatomía.csv') {
+                flashcards = [
+                    {question: '¿Qué es el húmero?', answer: 'Es un hueso largo del brazo.', explanation: 'El húmero conecta el hombro con el codo.'},
+                    {question: '¿Función principal de los glóbulos rojos?', answer: 'Transportar oxígeno.', explanation: 'Los glóbulos rojos contienen hemoglobina.'},
+                ];
+            } else if (fileName === 'Marioska.csv') {
+                flashcards = [
+                    {question: 'Pregunta 1 de Marioska', answer: 'Respuesta 1', explanation: 'Explicación 1'},
+                    {question: 'Pregunta 2 de Marioska', answer: 'Respuesta 2', explanation: 'Explicación 2'},
+                ];
+            } else if (fileName === 'Oscar.csv') {
+                flashcards = [
+                    {question: 'Pregunta 1 de Oscar', answer: 'Respuesta 1', explanation: 'Explicación 1'},
+                    {question: 'Pregunta 2 de Oscar', answer: 'Respuesta 2', explanation: 'Explicación 2'},
+                ];
+            } else if (fileName === 'Sus.csv') {
+                flashcards = [
+                    {question: 'Pregunta 1 de Sus', answer: 'Respuesta 1', explanation: 'Explicación 1'},
+                    {question: 'Pregunta 2 de Sus', answer: 'Respuesta 2', explanation: 'Explicación 2'},
+                ];
+            }
+        }
+
+        // Función para ir atrás
+        function goBack() {
+            window.location.href = 'index.html';
+        }
+
+        // Función para crear una flashcard
+        function createFlashcard(cardData) {
+            let flashcard = document.createElement('div');
+            flashcard.className = 'flashcard';
+
+            // Caras de la tarjeta
+            let front = document.createElement('div');
+            front.className = 'card front';
+            front.innerHTML = `<h2><i class="fas fa-question-circle"></i> ${cardData.question}</h2>`;
+
+            let back = document.createElement('div');
+            back.className = 'card back';
+            back.innerHTML = `<h2><i class="fas fa-lightbulb"></i> ${cardData.answer}</h2>`;
+
+            let explanation = document.createElement('div');
+            explanation.className = 'card explanation';
+            explanation.innerHTML = `<h2><i class="fas fa-info-circle"></i> ${cardData.explanation}</h2>`;
+
+            // Indicador de cara
+            let faceIndicator = document.createElement('div');
+            faceIndicator.className = 'face-indicator';
+            faceIndicator.innerHTML = `<i class="fas fa-question-circle"></i> Pregunta`;
+
+            flashcard.appendChild(front);
+            flashcard.appendChild(back);
+            flashcard.appendChild(explanation);
+            flashcard.appendChild(faceIndicator);
+
+            // Añadir eventos táctiles
+            flashcard.addEventListener('touchstart', handleTouchStart, false);
+            flashcard.addEventListener('touchmove', handleTouchMove, false);
+            flashcard.addEventListener('touchend', handleTouchEnd, false);
+
+            return flashcard;
+        }
+
+        // Cargar flashcards
+        function loadFlashcards() {
+            loadDataFromCSV(selectedFile);
+            let container = document.getElementById('flashcard-container');
+            container.innerHTML = '';
+            if (currentCardIndex >= flashcards.length) {
+                currentCardIndex = 0;
+            }
+            let cardData = flashcards[currentCardIndex];
+            let flashcard = createFlashcard(cardData);
+            container.appendChild(flashcard);
+            updateProgress();
+        }
+
+        // Actualizar barra de progreso
+        function updateProgress() {
+            let progressElement = document.getElementById('progress');
+            let progress = ((currentCardIndex + 1) / flashcards.length) * 100;
+            progressElement.style.width = progress + '%';
+        }
+
+        // Cambiar de cara
+        function flipCard(direction) {
+            let flashcard = document.querySelector('.flashcard');
+            let faceIndicator = flashcard.querySelector('.face-indicator');
+            if (direction === 'next') {
+                currentFace = (currentFace + 1) % 3;
+            } else {
+                currentFace = (currentFace - 1 + 3) % 3;
+            }
+            let rotationY = currentFace * 180;
+            gsap.to(flashcard, {duration: 0.8, rotationY: rotationY, ease: "power2.inOut"});
+            switch (currentFace) {
+                case 0:
+                    faceIndicator.innerHTML = `<i class="fas fa-question-circle"></i> Pregunta`;
+                    break;
+                case 1:
+                    faceIndicator.innerHTML = `<i class="fas fa-lightbulb"></i> Respuesta`;
+                    break;
+                case 2:
+                    faceIndicator.innerHTML = `<i class="fas fa-info-circle"></i> Explicación`;
+                    break;
+            }
+        }
+
+        // Cambiar de flashcard
+        function changeCard(direction) {
+            if (direction === 'next') {
+                currentCardIndex = (currentCardIndex + 1) % flashcards.length;
+            } else {
+                currentCardIndex = (currentCardIndex - 1 + flashcards.length) % flashcards.length;
+            }
+            currentFace = 0;
+            loadFlashcards();
+        }
+
+        // Clasificar tarjeta
+        function classifyCard(level) {
+            let cardKey = `${selectedFile}-${currentCardIndex}`;
+            classifications[cardKey] = level;
+            localStorage.setItem('classifications', JSON.stringify(classifications));
+            // Actualizar estadísticas del perfil
+            alert(`Tarjeta clasificada como ${level}`);
+        }
+
+        // Manejo de eventos táctiles
+        function handleTouchStart(event) {
+            touchStartY = event.touches[0].clientY;
+            touchStartX = event.touches[0].clientX;
+        }
+        function handleTouchMove(event) {
+            touchEndY = event.touches[0].clientY;
+            touchEndX = event.touches[0].clientX;
+        }
+        function handleTouchEnd() {
+            let deltaY = touchEndY - touchStartY;
+            let deltaX = touchEndX - touchStartX;
+            if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                // Movimiento horizontal
+                if (deltaX > 50) {
+                    flipCard('prev');
+                } else if (deltaX < -50) {
+                    flipCard('next');
+                }
+            } else {
+                // Movimiento vertical
+                if (deltaY > 50) {
+                    changeCard('prev');
+                } else if (deltaY < -50) {
+                    changeCard('next');
+                }
+            }
+        }
+
+        // Inicialización
+        window.onload = () => {
+            loadFlashcards();
+        };
+    </script>
+</body>
+</html>

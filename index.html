@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Flashcards Médicas Personalizadas</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Incluir la biblioteca GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <!-- Incluir Font Awesome para íconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Estilos generales */
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f4f8;
+            color: #333;
+        }
+        header {
+            background-color: #5DADE2;
+            color: #fff;
+            padding: 15px;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: normal;
+        }
+        /* Estilos de perfiles */
+        .profile-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background-color: #EBF5FB;
+            border-bottom: 1px solid #ddd;
+        }
+        .profile-info {
+            display: flex;
+            align-items: center;
+        }
+        .profile-info i {
+            font-size: 60px;
+            color: #3498DB;
+            margin-right: 15px;
+        }
+        .profile-info h2 {
+            margin: 0;
+            font-weight: normal;
+            color: #2C3E50;
+        }
+        .stats {
+            text-align: right;
+            color: #2C3E50;
+        }
+        .stats p {
+            margin: 5px 0;
+        }
+        /* Estilos de la lista de archivos */
+        .file-list {
+            padding: 20px;
+        }
+        .file-list table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #fff;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        .file-list th, .file-list td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .file-list th {
+            background-color: #5DADE2;
+            color: #fff;
+            font-weight: normal;
+        }
+        .file-list tr:hover {
+            background-color: #F2F4F4;
+            cursor: pointer;
+        }
+        .file-list td i {
+            color: #3498DB;
+            margin-right: 10px;
+        }
+        /* Estilos del formulario de inicio de sesión */
+        .login-form {
+            padding: 20px;
+            text-align: center;
+            background-color: #EBF5FB;
+            border-bottom: 1px solid #ddd;
+        }
+        .login-form input[type="password"] {
+            padding: 10px;
+            width: 200px;
+            margin-right: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .login-form button {
+            padding: 10px 20px;
+            background-color: #3498DB;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .login-form button:hover {
+            background-color: #2980B9;
+        }
+        /* Estilos para dispositivos móviles */
+        @media (max-width: 768px) {
+            .profile-section {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .stats {
+                text-align: left;
+                margin-top: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1><i class="fas fa-book-medical"></i> Flashcards Médicas Personalizadas</h1>
+    </header>
+
+    <!-- Formulario de inicio de sesión -->
+    <div class="login-form" id="login-form">
+        <input type="password" id="password" placeholder="Ingresa la contraseña">
+        <button onclick="login()"><i class="fas fa-user-plus"></i> Crear Perfil</button>
+    </div>
+
+    <div class="profile-section" id="profile-section" style="display: none;">
+        <div class="profile-info">
+            <i id="avatar" class="fas fa-user-md"></i>
+            <h2 id="username">Bienvenido</h2>
+        </div>
+        <div class="stats">
+            <p><i class="fas fa-book-reader"></i> Tarjetas estudiadas: <span id="cards-studied">0</span></p>
+            <p><i class="fas fa-chart-line"></i> Progreso: <span id="progress">0%</span></p>
+        </div>
+    </div>
+
+    <!-- Lista de archivos CSV -->
+    <div class="file-list">
+        <table>
+            <thead>
+                <tr>
+                    <th><i class="fas fa-file-csv"></i> Nombre del Archivo</th>
+                    <th><i class="fas fa-clone"></i> Número de Tarjetas</th>
+                    <th><i class="fas fa-calendar-alt"></i> Última Modificación</th>
+                </tr>
+            </thead>
+            <tbody id="file-table-body">
+                <!-- Las filas se agregarán dinámicamente -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // Variables globales
+        let profiles = JSON.parse(localStorage.getItem('profiles')) || [];
+        let currentProfile = JSON.parse(localStorage.getItem('currentProfile')) || null;
+        let files = [
+            {name: 'Anatomía.csv', cards: 50, modified: '2023-10-01'},
+            {name: 'Marioska.csv', cards: 40, modified: '2023-09-25'},
+            {name: 'Oscar.csv', cards: 30, modified: '2023-09-15'},
+            {name: 'Sus.csv', cards: 20, modified: '2023-09-10'}
+        ];
+
+        // Función de inicio de sesión
+        function login() {
+            let passwordInput = document.getElementById('password').value;
+            if (passwordInput === '20231610') {
+                let username = prompt('Ingrese su nombre de usuario:');
+                if (username) {
+                    let iconOptions = ['fas fa-user-md', 'fas fa-stethoscope', 'fas fa-heartbeat', 'fas fa-user-nurse'];
+                    let iconIndex = Math.floor(Math.random() * iconOptions.length);
+                    let avatar = iconOptions[iconIndex];
+                    let newProfile = {
+                        username: username,
+                        avatar: avatar,
+                        stats: {
+                            cardsStudied: 0,
+                            progress: 0
+                        },
+                        settings: {
+                            background: '#f0f4f8'
+                        }
+                    };
+                    profiles.push(newProfile);
+                    localStorage.setItem('profiles', JSON.stringify(profiles));
+                    localStorage.setItem('currentProfile', JSON.stringify(newProfile));
+                    currentProfile = newProfile;
+                    updateProfileUI();
+                    document.getElementById('login-form').style.display = 'none';
+                    document.getElementById('profile-section').style.display = 'flex';
+                }
+            } else {
+                alert('Contraseña incorrecta.');
+            }
+        }
+
+        // Actualizar la interfaz con la información del perfil
+        function updateProfileUI() {
+            if (currentProfile) {
+                document.getElementById('avatar').className = currentProfile.avatar;
+                document.getElementById('username').innerText = currentProfile.username;
+                document.getElementById('cards-studied').innerText = currentProfile.stats.cardsStudied;
+                document.getElementById('progress').innerText = currentProfile.stats.progress + '%';
+                document.body.style.backgroundColor = currentProfile.settings.background;
+            }
+        }
+
+        // Cargar la lista de archivos en la tabla
+        function loadFiles() {
+            let tableBody = document.getElementById('file-table-body');
+            tableBody.innerHTML = '';
+            files.forEach(file => {
+                let row = document.createElement('tr');
+                row.onclick = () => selectFile(file.name);
+                row.innerHTML = `
+                    <td><i class="fas fa-file-alt"></i> ${file.name}</td>
+                    <td>${file.cards}</td>
+                    <td>${file.modified}</td>
+                `;
+                tableBody.appendChild(row);
+                // Animación de aparición
+                gsap.from(row, {duration: 0.5, y: 20, opacity: 0});
+            });
+        }
+
+        // Función al seleccionar un archivo
+        function selectFile(fileName) {
+            if (currentProfile) {
+                localStorage.setItem('selectedFile', fileName);
+                window.location.href = 'index2.html';
+            } else {
+                alert('Por favor, inicie sesión para continuar.');
+            }
+        }
+
+        // Inicialización
+        window.onload = () => {
+            loadFiles();
+            if (currentProfile) {
+                updateProfileUI();
+                document.getElementById('login-form').style.display = 'none';
+                document.getElementById('profile-section').style.display = 'flex';
+            }
+        };
+    </script>
+</body>
+</html>
