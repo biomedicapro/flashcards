@@ -236,13 +236,68 @@
 
         // Datos de flashcards integrados
         let flashcardSets = {
-            'Anatomía': [
-                {question: '¿Qué hueso conecta el hombro con el codo?', answer: 'El húmero.', explanation: 'Es un hueso largo del brazo.'},
-                {question: '¿Cuántas vértebras tiene la columna vertebral humana?', answer: '33 vértebras.', explanation: 'Divididas en cervicales, torácicas, lumbares, sacras y coccígeas.'},
-                // ... Añade más tarjetas hasta completar 10
-            ],
-            // ... Otros conjuntos
-        };
+    'Anatomía': [
+        {question: '¿Qué hueso conecta el hombro con el codo?', answer: 'El húmero.', explanation: 'Es un hueso largo del brazo.'},
+        {question: '¿Cuántos lóbulos tiene el cerebro humano?', answer: 'Cuatro lóbulos.', explanation: 'Son: frontal, parietal, temporal y occipital.'},
+        {question: '¿Cuál es el órgano más grande del cuerpo humano?', answer: 'La piel.', explanation: 'Tiene una superficie aproximada de 2 metros cuadrados.'},
+        {question: '¿Qué tipo de articulación es la rodilla?', answer: 'Una articulación de bisagra.', explanation: 'Permite movimientos de flexión y extensión.'},
+        {question: '¿Dónde se encuentra el cúbito?', answer: 'En el antebrazo.', explanation: 'Es uno de los dos huesos que forman el antebrazo, junto con el radio.'},
+        {question: '¿Cuál es la función principal de los glóbulos rojos?', answer: 'Transportar oxígeno.', explanation: 'Llevan oxígeno a las células y eliminan dióxido de carbono.'},
+        {question: '¿Cuántos músculos tiene el cuerpo humano aproximadamente?', answer: 'Más de 600 músculos.', explanation: 'Incluyen músculos esqueléticos, lisos y cardíacos.'},
+        {question: '¿Qué órgano produce la bilis?', answer: 'El hígado.', explanation: 'La bilis ayuda en la digestión de grasas.'},
+        {question: '¿Dónde se encuentra el estribo?', answer: 'En el oído medio.', explanation: 'Es el hueso más pequeño del cuerpo humano.'},
+        {question: '¿Qué función tiene la médula espinal?', answer: 'Transmitir señales entre el cerebro y el cuerpo.', explanation: 'Es parte del sistema nervioso central.'}
+    ],
+    'Historia Universal': [
+        {question: '¿Quién fue el primer emperador romano?', answer: 'Augusto.', explanation: 'Fue el primer emperador tras la caída de la República Romana.'},
+        {question: '¿En qué año terminó la Segunda Guerra Mundial?', answer: '1945.', explanation: 'Terminó con la rendición de Alemania y Japón.'},
+        {question: '¿Qué civilización construyó las pirámides de Giza?', answer: 'Los egipcios.', explanation: 'Son monumentos funerarios de los faraones.'},
+        {question: '¿Quién pintó la Capilla Sixtina?', answer: 'Miguel Ángel.', explanation: 'La pintura del techo es una de sus obras más famosas.'},
+        {question: '¿Qué revolución marcó el inicio de la era industrial?', answer: 'La Revolución Industrial.', explanation: 'Comenzó en Inglaterra en el siglo XVIII.'},
+        {question: '¿Quién fue el líder de la independencia de India?', answer: 'Mahatma Gandhi.', explanation: 'Lideró movimientos pacíficos contra el dominio británico.'},
+        {question: '¿En qué año llegó Cristóbal Colón a América?', answer: '1492.', explanation: 'Fue un evento que marcó la historia global.'},
+        {question: '¿Qué imperio construyó la Gran Muralla China?', answer: 'El imperio Qin.', explanation: 'La muralla fue construida para protegerse de invasores.'},
+        {question: '¿Cuál fue el evento que inició la Primera Guerra Mundial?', answer: 'El asesinato del archiduque Francisco Fernando.', explanation: 'Este evento ocurrió en 1914.'},
+        {question: '¿Qué tratado puso fin a la Primera Guerra Mundial?', answer: 'El Tratado de Versalles.', explanation: 'Fue firmado en 1919.'}
+    ],
+    'Matemáticas': [
+        {question: '¿Qué es un número primo?', answer: 'Un número divisible solo por 1 y por sí mismo.', explanation: 'Ejemplos: 2, 3, 5, 7.'},
+        {question: '¿Cuál es el resultado de 7 x 8?', answer: '56.', explanation: 'Es una multiplicación básica.'},
+        {question: '¿Qué es el Teorema de Pitágoras?', answer: 'A² + B² = C².', explanation: 'Aplica en triángulos rectángulos.'},
+        {question: '¿Qué significa "π" en matemáticas?', answer: 'Es una constante que representa la relación entre la circunferencia y el diámetro.', explanation: 'Su valor es aproximadamente 3.1416.'},
+        {question: '¿Cuál es la derivada de x²?', answer: '2x.', explanation: 'Es una operación básica en cálculo diferencial.'},
+        {question: '¿Qué es un ángulo recto?', answer: 'Un ángulo de 90 grados.', explanation: 'Es un ángulo común en geometría.'},
+        {question: '¿Cuál es el valor de √64?', answer: '8.', explanation: 'Es la raíz cuadrada de 64.'},
+        {question: '¿Qué es una función lineal?', answer: 'Una función cuya gráfica es una línea recta.', explanation: 'Ejemplo: y = mx + b.'},
+        {question: '¿Cuál es el factorial de 5?', answer: '120.', explanation: 'Se calcula como 5x4x3x2x1.'},
+        {question: '¿Qué es una fracción impropia?', answer: 'Una fracción cuyo numerador es mayor que el denominador.', explanation: 'Ejemplo: 7/4.'}
+    ],
+    'Ciencias Naturales': [
+        {question: '¿Qué gas es esencial para la respiración?', answer: 'El oxígeno.', explanation: 'Es utilizado por las células para obtener energía.'},
+        {question: '¿Qué planeta es conocido como el planeta rojo?', answer: 'Marte.', explanation: 'Se debe a la presencia de óxido de hierro en su superficie.'},
+        {question: '¿Cuál es la fuente principal de energía en la Tierra?', answer: 'El Sol.', explanation: 'Proporciona luz y calor.'},
+        {question: '¿Qué estudia la botánica?', answer: 'Las plantas.', explanation: 'Es una rama de la biología.'},
+        {question: '¿Qué es el ciclo del agua?', answer: 'El movimiento continuo del agua en la Tierra.', explanation: 'Incluye evaporación, condensación y precipitación.'},
+        {question: '¿Qué órgano controla el cuerpo humano?', answer: 'El cerebro.', explanation: 'Es el centro del sistema nervioso.'},
+        {question: '¿Qué metal es líquido a temperatura ambiente?', answer: 'El mercurio.', explanation: 'Es el único metal líquido a temperatura ambiente.'},
+        {question: '¿Qué es la fotosíntesis?', answer: 'Un proceso por el cual las plantas convierten luz en energía.', explanation: 'Utilizan dióxido de carbono y agua.'},
+        {question: '¿Qué es un ecosistema?', answer: 'Una comunidad de seres vivos y su entorno.', explanation: 'Incluye factores bióticos y abióticos.'},
+        {question: '¿Cuál es el estado del agua a 100°C?', answer: 'Gaseoso.', explanation: 'A esta temperatura el agua hierve y se convierte en vapor.'}
+    ],
+    'Tecnología': [
+        {question: '¿Qué significa "HTML"?', answer: 'HyperText Markup Language.', explanation: 'Es el lenguaje estándar para crear páginas web.'},
+        {question: '¿Qué es un algoritmo?', answer: 'Un conjunto de pasos para resolver un problema.', explanation: 'Es fundamental en programación.'},
+        {question: '¿Qué significa "IoT"?', answer: 'Internet of Things.', explanation: 'Se refiere a dispositivos conectados a internet.'},
+        {question: '¿Qué es la inteligencia artificial?', answer: 'La simulación de procesos humanos por máquinas.', explanation: 'Incluye aprendizaje, razonamiento y autocorrección.'},
+        {question: '¿Qué es un sistema operativo?', answer: 'Software que gestiona el hardware y software de una computadora.', explanation: 'Ejemplos: Windows, macOS, Linux.'},
+        {question: '¿Qué significa "CSS"?', answer: 'Cascading Style Sheets.', explanation: 'Se utiliza para diseñar páginas web.'},
+        {question: '¿Qué es un lenguaje de programación?', answer: 'Un lenguaje que permite escribir instrucciones para computadoras.', explanation: 'Ejemplos: Python, Java, C++.'},
+        {question: '¿Qué es el Big Data?', answer: 'Conjunto de datos masivos y complejos.', explanation: 'Requieren tecnologías especiales para su análisis.'},
+        {question: '¿Qué significa "HTTP"?', answer: 'Hypertext Transfer Protocol.', explanation: 'Es el protocolo usado para la comunicación en la web.'},
+        {question: '¿Qué es la nube informática?', answer: 'Almacenamiento y acceso a datos en internet.', explanation: 'Ejemplos: Google Drive, Dropbox.'}
+    ]
+}
+;
 
         let selectedSet = localStorage.getItem('selectedSet') || 'Anatomía';
         let reviewLevel = localStorage.getItem('reviewLevel') || null;
