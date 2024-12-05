@@ -29,18 +29,83 @@
             font-size: 28px;
             font-weight: normal;
         }
-        /* Estilos de perfiles */
-        .profile-section {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        /* Estilos del inicio de sesión */
+        .login-screen {
             padding: 20px;
-            background-color: #EBF5FB;
-            border-bottom: 1px solid #ddd;
+            text-align: center;
+        }
+        .profile-list {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .profile-card {
+            background-color: #fff;
+            border-radius: 10px;
+            width: 150px;
+            padding: 20px;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        .profile-card:hover {
+            transform: scale(1.05);
+        }
+        .profile-card i {
+            font-size: 50px;
+            color: #3498DB;
+            margin-bottom: 10px;
+        }
+        .profile-card h3 {
+            margin: 0;
+            font-size: 18px;
+            color: #2C3E50;
+        }
+        .create-profile {
+            margin-top: 20px;
+        }
+        .create-profile input[type="password"] {
+            padding: 10px;
+            width: 200px;
+            margin-right: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .create-profile button {
+            padding: 10px 20px;
+            background-color: #3498DB;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .create-profile button:hover {
+            background-color: #2980B9;
+        }
+        /* Estilos de la sección principal */
+        .main-section {
+            display: none;
+            padding: 20px;
+        }
+        .logout-button {
+            position: absolute;
+            right: 15px;
+            top: 15px;
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 18px;
+            cursor: pointer;
+        }
+        .logout-button i {
+            margin-right: 5px;
         }
         .profile-info {
             display: flex;
             align-items: center;
+            margin-bottom: 20px;
         }
         .profile-info i {
             font-size: 60px;
@@ -52,76 +117,46 @@
             font-weight: normal;
             color: #2C3E50;
         }
-        .stats {
-            text-align: right;
+        /* Estilos de la lista de conjuntos */
+        .set-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .set-card {
+            background-color: #fff;
+            border-radius: 10px;
+            width: 200px;
+            padding: 20px;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        .set-card:hover {
+            transform: scale(1.05);
+        }
+        .set-card i {
+            font-size: 40px;
+            color: #3498DB;
+            margin-bottom: 10px;
+        }
+        .set-card h3 {
+            margin: 0;
+            font-size: 20px;
             color: #2C3E50;
         }
-        .stats p {
+        .set-card p {
             margin: 5px 0;
-        }
-        /* Estilos de la lista de archivos */
-        .file-list {
-            padding: 20px;
-        }
-        .file-list table {
-            width: 100%;
-            border-collapse: collapse;
-            background-color: #fff;
-            border-radius: 5px;
-            overflow: hidden;
-        }
-        .file-list th, .file-list td {
-            padding: 15px;
-            text-align: left;
-            border-bottom: 1px solid #f0f0f0;
-        }
-        .file-list th {
-            background-color: #5DADE2;
-            color: #fff;
-            font-weight: normal;
-        }
-        .file-list tr:hover {
-            background-color: #F2F4F4;
-            cursor: pointer;
-        }
-        .file-list td i {
-            color: #3498DB;
-            margin-right: 10px;
-        }
-        /* Estilos del formulario de inicio de sesión */
-        .login-form {
-            padding: 20px;
-            text-align: center;
-            background-color: #EBF5FB;
-            border-bottom: 1px solid #ddd;
-        }
-        .login-form input[type="password"] {
-            padding: 10px;
-            width: 200px;
-            margin-right: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-        .login-form button {
-            padding: 10px 20px;
-            background-color: #3498DB;
-            color: #fff;
-            border: none;
-            cursor: pointer;
-            border-radius: 5px;
-        }
-        .login-form button:hover {
-            background-color: #2980B9;
+            color: #7F8C8D;
         }
         /* Estilos para dispositivos móviles */
         @media (max-width: 768px) {
-            .profile-section {
+            .profile-list, .set-list {
                 flex-direction: column;
-                align-items: flex-start;
+                align-items: center;
             }
-            .stats {
-                text-align: left;
-                margin-top: 15px;
+            .profile-card, .set-card {
+                width: 80%;
             }
         }
     </style>
@@ -129,54 +164,86 @@
 <body>
     <header>
         <h1><i class="fas fa-book-medical"></i> Flashcards Médicas Personalizadas</h1>
+        <button class="logout-button" id="logout-button" style="display: none;" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Salir</button>
     </header>
 
-    <!-- Formulario de inicio de sesión -->
-    <div class="login-form" id="login-form">
-        <input type="password" id="password" placeholder="Ingresa la contraseña">
-        <button onclick="login()"><i class="fas fa-user-plus"></i> Crear Perfil</button>
+    <!-- Pantalla de inicio de sesión -->
+    <div class="login-screen" id="login-screen">
+        <h2>Selecciona tu perfil</h2>
+        <div class="profile-list" id="profile-list">
+            <!-- Perfiles existentes se cargarán aquí -->
+        </div>
+        <div class="create-profile">
+            <h3>Crear nuevo perfil</h3>
+            <input type="password" id="password" placeholder="Ingresa la contraseña">
+            <button onclick="createProfile()"><i class="fas fa-user-plus"></i> Crear Perfil</button>
+        </div>
     </div>
 
-    <div class="profile-section" id="profile-section" style="display: none;">
+    <!-- Sección principal -->
+    <div class="main-section" id="main-section">
         <div class="profile-info">
             <i id="avatar" class="fas fa-user-md"></i>
             <h2 id="username">Bienvenido</h2>
         </div>
-        <div class="stats">
-            <p><i class="fas fa-book-reader"></i> Tarjetas estudiadas: <span id="cards-studied">0</span></p>
-            <p><i class="fas fa-chart-line"></i> Progreso: <span id="progress">0%</span></p>
+        <h3>Selecciona un conjunto de flashcards</h3>
+        <div class="set-list">
+            <!-- Conjuntos de flashcards -->
+            <div class="set-card" onclick="selectSet('Anatomía')">
+                <i class="fas fa-bone"></i>
+                <h3>Anatomía</h3>
+                <p id="progress-Anatomía">0/10 tarjetas revisadas</p>
+            </div>
+            <div class="set-card" onclick="selectSet('Fisiología')">
+                <i class="fas fa-heartbeat"></i>
+                <h3>Fisiología</h3>
+                <p id="progress-Fisiología">0/10 tarjetas revisadas</p>
+            </div>
+            <div class="set-card" onclick="selectSet('Farmacología')">
+                <i class="fas fa-pills"></i>
+                <h3>Farmacología</h3>
+                <p id="progress-Farmacología">0/10 tarjetas revisadas</p>
+            </div>
+            <div class="set-card" onclick="selectSet('Microbiología')">
+                <i class="fas fa-virus"></i>
+                <h3>Microbiología</h3>
+                <p id="progress-Microbiología">0/10 tarjetas revisadas</p>
+            </div>
         </div>
-    </div>
-
-    <!-- Lista de archivos CSV -->
-    <div class="file-list">
-        <table>
-            <thead>
-                <tr>
-                    <th><i class="fas fa-file-csv"></i> Nombre del Archivo</th>
-                    <th><i class="fas fa-clone"></i> Número de Tarjetas</th>
-                    <th><i class="fas fa-calendar-alt"></i> Última Modificación</th>
-                </tr>
-            </thead>
-            <tbody id="file-table-body">
-                <!-- Las filas se agregarán dinámicamente -->
-            </tbody>
-        </table>
     </div>
 
     <script>
         // Variables globales
         let profiles = JSON.parse(localStorage.getItem('profiles')) || [];
         let currentProfile = JSON.parse(localStorage.getItem('currentProfile')) || null;
-        let files = [
-            {name: 'Anatomía.csv', cards: 50, modified: '2023-10-01'},
-            {name: 'Marioska.csv', cards: 40, modified: '2023-09-25'},
-            {name: 'Oscar.csv', cards: 30, modified: '2023-09-15'},
-            {name: 'Sus.csv', cards: 20, modified: '2023-09-10'}
-        ];
 
-        // Función de inicio de sesión
-        function login() {
+        // Función para mostrar perfiles existentes
+        function loadProfiles() {
+            let profileList = document.getElementById('profile-list');
+            profileList.innerHTML = '';
+            profiles.forEach((profile, index) => {
+                let card = document.createElement('div');
+                card.className = 'profile-card';
+                card.onclick = () => selectProfile(index);
+                card.innerHTML = `
+                    <i class="${profile.avatar}"></i>
+                    <h3>${profile.username}</h3>
+                `;
+                profileList.appendChild(card);
+                // Animación
+                gsap.from(card, {duration: 0.5, y: 20, opacity: 0});
+            });
+        }
+
+        // Función para seleccionar un perfil existente
+        function selectProfile(index) {
+            currentProfile = profiles[index];
+            localStorage.setItem('currentProfile', JSON.stringify(currentProfile));
+            showMainSection();
+        }
+
+        // Función para crear un nuevo perfil
+        function createProfile() {
             let passwordInput = document.getElementById('password').value;
             if (passwordInput === '20231610') {
                 let username = prompt('Ingrese su nombre de usuario:');
@@ -187,73 +254,68 @@
                     let newProfile = {
                         username: username,
                         avatar: avatar,
-                        stats: {
-                            cardsStudied: 0,
-                            progress: 0
-                        },
-                        settings: {
-                            background: '#f0f4f8'
+                        progress: {
+                            'Anatomía': 0,
+                            'Fisiología': 0,
+                            'Farmacología': 0,
+                            'Microbiología': 0
                         }
                     };
                     profiles.push(newProfile);
                     localStorage.setItem('profiles', JSON.stringify(profiles));
-                    localStorage.setItem('currentProfile', JSON.stringify(newProfile));
                     currentProfile = newProfile;
-                    updateProfileUI();
-                    document.getElementById('login-form').style.display = 'none';
-                    document.getElementById('profile-section').style.display = 'flex';
+                    localStorage.setItem('currentProfile', JSON.stringify(currentProfile));
+                    showMainSection();
                 }
             } else {
                 alert('Contraseña incorrecta.');
             }
         }
 
-        // Actualizar la interfaz con la información del perfil
+        // Función para mostrar la sección principal
+        function showMainSection() {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('main-section').style.display = 'block';
+            document.getElementById('logout-button').style.display = 'block';
+            updateProfileUI();
+        }
+
+        // Función para actualizar la interfaz del perfil
         function updateProfileUI() {
             if (currentProfile) {
                 document.getElementById('avatar').className = currentProfile.avatar;
                 document.getElementById('username').innerText = currentProfile.username;
-                document.getElementById('cards-studied').innerText = currentProfile.stats.cardsStudied;
-                document.getElementById('progress').innerText = currentProfile.stats.progress + '%';
-                document.body.style.backgroundColor = currentProfile.settings.background;
+                // Actualizar el progreso en los conjuntos
+                for (let set in currentProfile.progress) {
+                    document.getElementById(`progress-${set}`).innerText = `${currentProfile.progress[set]}/10 tarjetas revisadas`;
+                }
             }
         }
 
-        // Cargar la lista de archivos en la tabla
-        function loadFiles() {
-            let tableBody = document.getElementById('file-table-body');
-            tableBody.innerHTML = '';
-            files.forEach(file => {
-                let row = document.createElement('tr');
-                row.onclick = () => selectFile(file.name);
-                row.innerHTML = `
-                    <td><i class="fas fa-file-alt"></i> ${file.name}</td>
-                    <td>${file.cards}</td>
-                    <td>${file.modified}</td>
-                `;
-                tableBody.appendChild(row);
-                // Animación de aparición
-                gsap.from(row, {duration: 0.5, y: 20, opacity: 0});
-            });
-        }
-
-        // Función al seleccionar un archivo
-        function selectFile(fileName) {
+        // Función para seleccionar un conjunto de flashcards
+        function selectSet(setName) {
             if (currentProfile) {
-                localStorage.setItem('selectedFile', fileName);
+                localStorage.setItem('selectedSet', setName);
                 window.location.href = 'index2.html';
-            } else {
-                alert('Por favor, inicie sesión para continuar.');
             }
+        }
+
+        // Función para cerrar sesión
+        function logout() {
+            localStorage.removeItem('currentProfile');
+            currentProfile = null;
+            document.getElementById('login-screen').style.display = 'block';
+            document.getElementById('main-section').style.display = 'none';
+            document.getElementById('logout-button').style.display = 'none';
+            loadProfiles();
         }
 
         // Inicialización
         window.onload = () => {
-            loadFiles();
             if (currentProfile) {
-                updateProfileUI();
-                document.getElementById('login-form').style.display = 'none';
-                document.getElementById('profile-section').style.display = 'flex';
+                showMainSection();
+            } else {
+                loadProfiles();
             }
         };
     </script>
