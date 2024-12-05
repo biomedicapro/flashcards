@@ -77,7 +77,9 @@
         }
         .flashcard {
             width: 80vw;
+            max-width: 600px;
             height: 80vh;
+            max-height: 600px;
             position: relative;
             perspective: 1500px;
         }
@@ -94,6 +96,7 @@
             box-sizing: border-box;
             background: linear-gradient(to bottom, #fff, #f0f0f0);
             box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            transform-style: preserve-3d;
         }
         .card h2 {
             margin: 0;
@@ -103,7 +106,6 @@
         .front {
             background-color: #3498DB;
             color: #fff;
-            transform: rotateY(0deg);
         }
         .back {
             background-color: #2ECC71;
@@ -113,7 +115,7 @@
         .explanation {
             background-color: #9B59B6;
             color: #fff;
-            transform: rotateY(-180deg);
+            transform: rotateX(180deg);
         }
         /* Clasificación */
         .classification {
@@ -222,7 +224,8 @@
         let flashcardSets = {
             'Anatomía': [
                 {question: '¿Qué hueso conecta el hombro con el codo?', answer: 'El húmero.', explanation: 'Es un hueso largo del brazo.'},
-                // ... Añade más tarjetas
+                {question: '¿Cuántas vértebras tiene la columna vertebral humana?', answer: '33 vértebras.', explanation: 'Divididas en cervicales, torácicas, lumbares, sacras y coccígeas.'},
+                // ... Añade más tarjetas hasta completar 10
             ],
             // ... Otros conjuntos
         };
@@ -243,7 +246,7 @@
             }
             if (flashcards.length === 0) {
                 alert('No hay tarjetas para mostrar.');
-                window.location.href = 'index.html';
+                goBack();
                 return;
             }
             currentCardIndex = 0;
@@ -341,7 +344,7 @@
                 rotation.y = 180;
                 faceIndicator.innerHTML = `<i class="fas fa-lightbulb"></i> Respuesta`;
             } else if (currentFace === 2) {
-                rotation.x = -180;
+                rotation.x = 180;
                 rotation.y = 0;
                 faceIndicator.innerHTML = `<i class="fas fa-info-circle"></i> Explicación`;
             }
@@ -431,7 +434,12 @@
         // Función para regresar y limpiar el nivel de revisión
         function goBack() {
             localStorage.removeItem('reviewLevel');
-            window.location.href = 'index.html';
+            if (localStorage.getItem('returnToProfile')) {
+                localStorage.removeItem('returnToProfile');
+                window.location.href = 'index.html#main-section';
+            } else {
+                window.location.href = 'index.html';
+            }
         }
 
         // Inicialización
