@@ -49,6 +49,7 @@
             cursor: pointer;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             transition: transform 0.2s;
+            position: relative;
         }
         .profile-card:hover {
             transform: scale(1.05);
@@ -62,6 +63,16 @@
             margin: 0;
             font-size: 18px;
             color: #2C3E50;
+        }
+        .delete-profile {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: none;
+            border: none;
+            color: #E74C3C;
+            font-size: 16px;
+            cursor: pointer;
         }
         .create-profile {
             margin-top: 20px;
@@ -210,12 +221,19 @@
                 <p id="progress-Microbiología">0/10 tarjetas revisadas</p>
             </div>
         </div>
+        <!-- Botón para revisar tarjetas clasificadas -->
+        <h3>Revisar tarjetas clasificadas</h3>
+        <div class="classification-options">
+            <button onclick="reviewClassified('Difícil')"><i class="fas fa-frown"></i> Difíciles</button>
+            <button onclick="reviewClassified('Medio')"><i class="fas fa-meh"></i> Medias</button>
+            <button onclick="reviewClassified('Fácil')"><i class="fas fa-smile"></i> Fáciles</button>
+        </div>
     </div>
 
     <script>
         // Variables globales
         let profiles = JSON.parse(localStorage.getItem('profiles')) || [];
-        let currentProfile = JSON.parse(localStorage.getItem('currentProfile')) || null;
+        let currentProfile = null;
 
         // Función para mostrar perfiles existentes
         function loadProfiles() {
@@ -224,11 +242,12 @@
             profiles.forEach((profile, index) => {
                 let card = document.createElement('div');
                 card.className = 'profile-card';
-                card.onclick = () => selectProfile(index);
                 card.innerHTML = `
+                    <button class="delete-profile" onclick="deleteProfile(event, ${index})"><i class="fas fa-trash-alt"></i></button>
                     <i class="${profile.avatar}"></i>
                     <h3>${profile.username}</h3>
                 `;
+                card.onclick = (event) => selectProfile(event, index);
                 profileList.appendChild(card);
                 // Animación
                 gsap.from(card, {duration: 0.5, y: 20, opacity: 0});
@@ -236,10 +255,17 @@
         }
 
         // Función para seleccionar un perfil existente
-        function selectProfile(index) {
-            currentProfile = profiles[index];
-            localStorage.setItem('currentProfile', JSON.stringify(currentProfile));
-            showMainSection();
+        function selectProfile(event, index) {
+            // Evitar que el clic en el botón de eliminar active esta función
+            if (event.target.closest('.delete-profile')) return;
+            let password = prompt('Ingrese la contraseña para acceder al perfil:');
+            if (password === '20231610') {
+                currentProfile = profiles[index];
+                localStorage.setItem('currentProfile', JSON.stringify(currentProfile));
+                showMainSection();
+            } else {
+                alert('Contraseña incorrecta.');
+            }
         }
 
         // Función para crear un nuevo perfil
@@ -248,9 +274,10 @@
             if (passwordInput === '20231610') {
                 let username = prompt('Ingrese su nombre de usuario:');
                 if (username) {
-                    let iconOptions = ['fas fa-user-md', 'fas fa-stethoscope', 'fas fa-heartbeat', 'fas fa-user-nurse'];
-                    let iconIndex = Math.floor(Math.random() * iconOptions.length);
-                    let avatar = iconOptions[iconIndex];
+                    let iconOptions = ['fas fa-user-md', 'fas fa-stethoscope', 'fas fa-heartbeat', 'fas fa-user-nurse', 'fas fa-user-injured'];
+                    let usedIcons = profiles.map(profile => profile.avatar);
+                    let availableIcons = iconOptions.filter(icon => !usedIcons.includes(icon));
+                    let avatar = availableIcons.length > 0 ? availableIcons[0] : iconOptions[Math.floor(Math.random() * iconOptions.length)];
                     let newProfile = {
                         username: username,
                         avatar: avatar,
@@ -269,6 +296,16 @@
                 }
             } else {
                 alert('Contraseña incorrecta.');
+            }
+        }
+
+        // Función para eliminar un perfil
+        function deleteProfile(event, index) {
+            event.stopPropagation();
+            if (confirm('¿Está seguro de que desea eliminar este perfil?')) {
+                profiles.splice(index, 1);
+                localStorage.setItem('profiles', JSON.stringify(profiles));
+                loadProfiles();
             }
         }
 
@@ -296,6 +333,15 @@
         function selectSet(setName) {
             if (currentProfile) {
                 localStorage.setItem('selectedSet', setName);
+                localStorage.setItem('currentProfile', JSON.stringify(currentProfile));
+                window.location.href = 'index2.html';
+            }
+        }
+
+        // Función para revisar tarjetas clasificadas
+        function reviewClassified(level) {
+            if (currentProfile) {
+                localStorage.setItem('reviewLevel', level);
                 window.location.href = 'index2.html';
             }
         }
@@ -312,11 +358,7 @@
 
         // Inicialización
         window.onload = () => {
-            if (currentProfile) {
-                showMainSection();
-            } else {
-                loadProfiles();
-            }
+            loadProfiles();
         };
     </script>
 </body>
