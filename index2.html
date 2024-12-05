@@ -33,7 +33,7 @@
             font-size: 24px;
             font-weight: normal;
         }
-        .back-button, .theme-toggle-button {
+        .back-button, .theme-toggle-button, .fullscreen-button {
             position: absolute;
             top: 15px;
             background: none;
@@ -48,7 +48,10 @@
         .theme-toggle-button {
             right: 15px;
         }
-        .back-button i, .theme-toggle-button i {
+        .fullscreen-button {
+            right: 50px;
+        }
+        .back-button i, .theme-toggle-button i, .fullscreen-button i {
             margin-right: 5px;
         }
         /* Barra de progreso */
@@ -65,13 +68,19 @@
             height: 100%;
             background-color: #5DADE2;
         }
+        /* Contenedor para pantalla completa */
+        .flashcard-fullscreen-container {
+            width: 100%;
+            height: calc(100vh - 70px);
+            position: relative;
+            overflow: hidden;
+        }
         /* Contenedor de flashcards */
         .flashcard-container {
-            margin-top: 70px;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: calc(100vh - 70px);
+            height: 100%;
             overflow: hidden;
             position: relative;
         }
@@ -120,7 +129,7 @@
         }
         /* Clasificación */
         .classification {
-            position: fixed;
+            position: absolute;
             bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
@@ -195,18 +204,22 @@
     <header>
         <button class="back-button" onclick="goBack()"><i class="fas fa-arrow-left"></i> Volver</button>
         <h1><i class="fas fa-book-reader"></i> Estudio de Flashcards</h1>
+        <button class="fullscreen-button" onclick="toggleFullScreen()"><i class="fas fa-expand"></i></button>
         <button class="theme-toggle-button" onclick="toggleTheme()"><i class="fas fa-moon"></i></button>
     </header>
     <div class="progress-bar">
         <div class="progress" id="progress"></div>
     </div>
-    <div class="flashcard-container" id="flashcard-container">
-        <!-- Las flashcards se generarán dinámicamente -->
-    </div>
-    <div class="classification">
-        <button class="easy" onclick="classifyCard('Fácil')"><i class="fas fa-smile"></i> Fácil</button>
-        <button class="medium" onclick="classifyCard('Medio')"><i class="fas fa-meh"></i> Medio</button>
-        <button class="hard" onclick="classifyCard('Difícil')"><i class="fas fa-frown"></i> Difícil</button>
+    <!-- Contenedor para pantalla completa -->
+    <div id="flashcard-fullscreen-container" class="flashcard-fullscreen-container">
+        <div class="flashcard-container" id="flashcard-container">
+            <!-- Las flashcards se generarán dinámicamente -->
+        </div>
+        <div class="classification">
+            <button class="easy" onclick="classifyCard('Fácil')"><i class="fas fa-smile"></i> Fácil</button>
+            <button class="medium" onclick="classifyCard('Medio')"><i class="fas fa-meh"></i> Medio</button>
+            <button class="hard" onclick="classifyCard('Difícil')"><i class="fas fa-frown"></i> Difícil</button>
+        </div>
     </div>
 
     <script>
@@ -235,15 +248,43 @@
         let reviewLevel = localStorage.getItem('reviewLevel') || null;
         let currentProfile = JSON.parse(localStorage.getItem('currentProfile')) || null;
 
-        // Solicitar pantalla completa
-        function requestFullScreen() {
-            let elem = document.documentElement;
-            if (elem.requestFullscreen) {
-                elem.requestFullscreen();
-            } else if (elem.webkitRequestFullscreen) { /* Safari */
-                elem.webkitRequestFullscreen();
-            } else if (elem.msRequestFullscreen) { /* IE11 */
-                elem.msRequestFullscreen();
+        // Función para entrar en pantalla completa
+        function enterFullScreen(element) {
+            if (element.requestFullscreen) {
+                element.requestFullscreen();
+            } else if (element.mozRequestFullScreen) { /* Firefox */
+                element.mozRequestFullScreen();
+            } else if (element.webkitRequestFullscreen) { /* Chrome, Safari y Opera */
+                element.webkitRequestFullscreen();
+            } else if (element.msRequestFullscreen) { /* IE/Edge */
+                element.msRequestFullscreen();
+            }
+        }
+
+        // Función para salir de pantalla completa
+        function exitFullScreen() {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.mozCancelFullScreen) { /* Firefox */
+                document.mozCancelFullScreen();
+            } else if (document.webkitExitFullscreen) { /* Chrome, Safari y Opera */
+                document.webkitExitFullscreen();
+            } else if (document.msExitFullscreen) { /* IE/Edge */
+                document.msExitFullscreen();
+            }
+        }
+
+        // Función para alternar pantalla completa
+        function toggleFullScreen() {
+            let fullscreenContainer = document.getElementById('flashcard-fullscreen-container');
+            if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.mozFullScreenElement && !document.msFullscreenElement) {
+                enterFullScreen(fullscreenContainer);
+                document.querySelector('.fullscreen-button i').classList.remove('fa-expand');
+                document.querySelector('.fullscreen-button i').classList.add('fa-compress');
+            } else {
+                exitFullScreen();
+                document.querySelector('.fullscreen-button i').classList.remove('fa-compress');
+                document.querySelector('.fullscreen-button i').classList.add('fa-expand');
             }
         }
 
@@ -448,8 +489,6 @@
 
         // Inicialización
         window.onload = () => {
-            // Solicitar pantalla completa
-            requestFullScreen();
             loadFlashcards();
             if (theme === 'night') {
                 document.body.classList.add('night-mode');
