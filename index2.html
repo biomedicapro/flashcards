@@ -76,17 +76,14 @@
             position: relative;
         }
         .flashcard {
-            width: 80vw;
-            max-width: 600px;
-            height: 80vh;
-            max-height: 600px;
-            position: relative;
-            perspective: 1500px;
-        }
-        .card {
             width: 100%;
             height: 100%;
+            position: relative;
+        }
+        .card {
             position: absolute;
+            width: 100%;
+            height: 100%;
             backface-visibility: hidden;
             display: flex;
             justify-content: center;
@@ -96,7 +93,13 @@
             box-sizing: border-box;
             background: linear-gradient(to bottom, #fff, #f0f0f0);
             box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            transform-style: preserve-3d;
+            opacity: 0;
+            z-index: 0;
+            transition: opacity 0.4s ease;
+        }
+        .card.visible {
+            opacity: 1;
+            z-index: 1;
         }
         .card h2 {
             margin: 0;
@@ -110,12 +113,10 @@
         .back {
             background-color: #2ECC71;
             color: #fff;
-            transform: rotateY(180deg);
         }
         .explanation {
             background-color: #9B59B6;
             color: #fff;
-            transform: rotateX(180deg);
         }
         /* Clasificación */
         .classification {
@@ -178,8 +179,8 @@
         /* Estilos para dispositivos móviles */
         @media (max-width: 768px) {
             .flashcard {
-                width: 90%;
-                height: 70%;
+                width: 100%;
+                height: 100%;
             }
             .card h2 {
                 font-size: 1.5em;
@@ -234,6 +235,18 @@
         let reviewLevel = localStorage.getItem('reviewLevel') || null;
         let currentProfile = JSON.parse(localStorage.getItem('currentProfile')) || null;
 
+        // Solicitar pantalla completa
+        function requestFullScreen() {
+            let elem = document.documentElement;
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen();
+            } else if (elem.webkitRequestFullscreen) { /* Safari */
+                elem.webkitRequestFullscreen();
+            } else if (elem.msRequestFullscreen) { /* IE11 */
+                elem.msRequestFullscreen();
+            }
+        }
+
         // Cargar las flashcards
         function loadFlashcards() {
             flashcards = flashcardSets[selectedSet];
@@ -273,25 +286,20 @@
 
             // Caras de la tarjeta
             let front = document.createElement('div');
-            front.className = 'card front';
+            front.className = 'card face front visible';
             front.innerHTML = `<h2><i class="fas fa-question-circle"></i> ${cardData.question}</h2>`;
 
             let back = document.createElement('div');
-            back.className = 'card back';
+            back.className = 'card face back';
             back.innerHTML = `<h2><i class="fas fa-lightbulb"></i> ${cardData.answer}</h2>`;
 
             let explanation = document.createElement('div');
-            explanation.className = 'card explanation';
+            explanation.className = 'card face explanation';
             explanation.innerHTML = `<h2><i class="fas fa-info-circle"></i> ${cardData.explanation}</h2>`;
 
             flashcard.appendChild(front);
             flashcard.appendChild(back);
             flashcard.appendChild(explanation);
-
-            // Posicionar las caras
-            front.style.transform = 'rotateY(0deg)';
-            back.style.transform = 'rotateY(180deg)';
-            explanation.style.transform = 'rotateX(180deg)';
 
             // Indicador de cara
             let faceIndicator = document.createElement('div');
@@ -304,9 +312,6 @@
             flashcard.addEventListener('touchstart', handleTouchStart, false);
             flashcard.addEventListener('touchmove', handleTouchMove, false);
             flashcard.addEventListener('touchend', handleTouchEnd, false);
-
-            // Variable para controlar el ángulo de rotación
-            flashcard.currentRotation = {x: 0, y: 0};
 
             return flashcard;
         }
@@ -327,31 +332,42 @@
         function flipCard(direction) {
             let flashcard = document.querySelector('.flashcard');
             let faceIndicator = flashcard.querySelector('.face-indicator');
-            let rotation = flashcard.currentRotation;
+            let faces = flashcard.querySelectorAll('.face');
 
-            if (direction === 'next') {
-                currentFace = (currentFace + 1) % 3;
-            } else {
-                currentFace = (currentFace - 1 + 3) % 3;
-            }
+            // Aplicar animación de rotación
+            let rotationY = direction === 'next' ? 90 : -90;
+            gsap.to(flashcard, {rotationY: rotationY, duration: 0.3, ease: 'power1.in', onComplete: () => {
+                // Actualizar cara actual
+                if (direction === 'next') {
+                    currentFace = (currentFace + 1) % faces.length;
+                } else {
+                    currentFace = (currentFace - 1 + faces.length) % faces.length;
+                }
 
-            if (currentFace === 0) {
-                rotation.x = 0;
-                rotation.y = 0;
-                faceIndicator.innerHTML = `<i class="fas fa-question-circle"></i> Pregunta`;
-            } else if (currentFace === 1) {
-                rotation.x = 0;
-                rotation.y = 180;
-                faceIndicator.innerHTML = `<i class="fas fa-lightbulb"></i> Respuesta`;
-            } else if (currentFace === 2) {
-                rotation.x = 180;
-                rotation.y = 0;
-                faceIndicator.innerHTML = `<i class="fas fa-info-circle"></i> Explicación`;
-            }
+                // Actualizar visibilidad de las caras
+                faces.forEach((face, index) => {
+                    face.classList.remove('visible');
+                    if (index === currentFace) {
+                        face.classList.add('visible');
+                    }
+                });
 
-            gsap.to(flashcard, {duration: 0.8, rotationX: rotation.x, rotationY: rotation.y, ease: "power2.inOut"});
+                // Actualizar indicador de cara
+                switch (currentFace) {
+                    case 0:
+                        faceIndicator.innerHTML = `<i class="fas fa-question-circle"></i> Pregunta`;
+                        break;
+                    case 1:
+                        faceIndicator.innerHTML = `<i class="fas fa-lightbulb"></i> Respuesta`;
+                        break;
+                    case 2:
+                        faceIndicator.innerHTML = `<i class="fas fa-info-circle"></i> Explicación`;
+                        break;
+                }
 
-            flashcard.currentRotation = rotation;
+                // Completar animación de rotación
+                gsap.to(flashcard, {rotationY: 0, duration: 0.3, ease: 'power1.out'});
+            }});
         }
 
         // Cambiar de flashcard
@@ -419,18 +435,6 @@
             localStorage.setItem('theme', theme);
         }
 
-        // Solicitar pantalla completa
-        function requestFullScreen() {
-            let elem = document.documentElement;
-            if (elem.requestFullscreen) {
-                elem.requestFullscreen();
-            } else if (elem.webkitRequestFullscreen) { /* Safari */
-                elem.webkitRequestFullscreen();
-            } else if (elem.msRequestFullscreen) { /* IE11 */
-                elem.msRequestFullscreen();
-            }
-        }
-
         // Función para regresar y limpiar el nivel de revisión
         function goBack() {
             localStorage.removeItem('reviewLevel');
@@ -444,14 +448,14 @@
 
         // Inicialización
         window.onload = () => {
+            // Solicitar pantalla completa
+            requestFullScreen();
             loadFlashcards();
             if (theme === 'night') {
                 document.body.classList.add('night-mode');
                 document.querySelector('.theme-toggle-button i').classList.remove('fa-moon');
                 document.querySelector('.theme-toggle-button i').classList.add('fa-sun');
             }
-            // Solicitar pantalla completa
-            requestFullScreen();
         };
     </script>
 </body>
