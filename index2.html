@@ -15,6 +15,7 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f0f4f8;
             color: #333;
+            overflow: hidden;
         }
         header {
             background-color: #5DADE2;
@@ -23,15 +24,17 @@
             text-align: center;
             position: relative;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         header h1 {
             margin: 0;
             font-size: 24px;
             font-weight: normal;
         }
-        .back-button {
+        .back-button, .theme-toggle-button {
             position: absolute;
-            left: 15px;
             top: 15px;
             background: none;
             border: none;
@@ -39,7 +42,13 @@
             font-size: 18px;
             cursor: pointer;
         }
-        .back-button i {
+        .back-button {
+            left: 15px;
+        }
+        .theme-toggle-button {
+            right: 15px;
+        }
+        .back-button i, .theme-toggle-button i {
             margin-right: 5px;
         }
         /* Barra de progreso */
@@ -58,19 +67,19 @@
         }
         /* Contenedor de flashcards */
         .flashcard-container {
-            margin-top: 80px;
+            margin-top: 70px;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: calc(100vh - 80px);
+            height: calc(100vh - 70px);
             overflow: hidden;
             position: relative;
         }
         .flashcard {
-            width: 300px;
-            height: 400px;
+            width: 80vw;
+            height: 80vh;
             perspective: 1000px;
-            position: absolute;
+            position: relative;
         }
         .card {
             width: 100%;
@@ -87,10 +96,11 @@
             align-items: center;
             padding: 20px;
             box-sizing: border-box;
+            transform-style: preserve-3d;
         }
         .card h2 {
             margin: 0;
-            font-size: 22px;
+            font-size: 2em;
             color: #2C3E50;
         }
         .front {
@@ -154,11 +164,25 @@
         .face-indicator i {
             margin-right: 5px;
         }
+        /* Estilos para modo nocturno */
+        body.night-mode {
+            background-color: #2C3E50;
+            color: #ECF0F1;
+        }
+        body.night-mode .flashcard .card {
+            background: linear-gradient(to bottom, #34495E, #2C3E50);
+        }
+        body.night-mode .flashcard .card h2 {
+            color: #ECF0F1;
+        }
         /* Estilos para dispositivos móviles */
         @media (max-width: 768px) {
             .flashcard {
                 width: 90%;
-                height: 60%;
+                height: 70%;
+            }
+            .card h2 {
+                font-size: 1.5em;
             }
             .classification {
                 flex-direction: column;
@@ -170,6 +194,7 @@
     <header>
         <button class="back-button" onclick="goBack()"><i class="fas fa-arrow-left"></i> Volver</button>
         <h1><i class="fas fa-book-reader"></i> Estudio de Flashcards</h1>
+        <button class="theme-toggle-button" onclick="toggleTheme()"><i class="fas fa-moon"></i></button>
     </header>
     <div class="progress-bar">
         <div class="progress" id="progress"></div>
@@ -193,35 +218,34 @@
         let touchEndY = 0;
         let touchStartX = 0;
         let touchEndX = 0;
+        let theme = localStorage.getItem('theme') || 'day';
 
-        // Datos cargados desde el archivo CSV seleccionado
-        let selectedFile = localStorage.getItem('selectedFile') || 'Anatomía.csv';
-        // Simulación de carga de datos desde el archivo seleccionado
-        function loadDataFromCSV(fileName) {
-            // Aquí puedes implementar la carga real desde un archivo CSV
-            // Por ahora, usaremos datos de ejemplo
-            if (fileName === 'Anatomía.csv') {
-                flashcards = [
-                    {question: '¿Qué es el húmero?', answer: 'Es un hueso largo del brazo.', explanation: 'El húmero conecta el hombro con el codo.'},
-                    {question: '¿Función principal de los glóbulos rojos?', answer: 'Transportar oxígeno.', explanation: 'Los glóbulos rojos contienen hemoglobina.'},
-                ];
-            } else if (fileName === 'Marioska.csv') {
-                flashcards = [
-                    {question: 'Pregunta 1 de Marioska', answer: 'Respuesta 1', explanation: 'Explicación 1'},
-                    {question: 'Pregunta 2 de Marioska', answer: 'Respuesta 2', explanation: 'Explicación 2'},
-                ];
-            } else if (fileName === 'Oscar.csv') {
-                flashcards = [
-                    {question: 'Pregunta 1 de Oscar', answer: 'Respuesta 1', explanation: 'Explicación 1'},
-                    {question: 'Pregunta 2 de Oscar', answer: 'Respuesta 2', explanation: 'Explicación 2'},
-                ];
-            } else if (fileName === 'Sus.csv') {
-                flashcards = [
-                    {question: 'Pregunta 1 de Sus', answer: 'Respuesta 1', explanation: 'Explicación 1'},
-                    {question: 'Pregunta 2 de Sus', answer: 'Respuesta 2', explanation: 'Explicación 2'},
-                ];
-            }
-        }
+        // Datos de flashcards integrados
+        let flashcardSets = {
+            'Anatomía': [
+                {question: '¿Qué es el húmero?', answer: 'Es un hueso largo del brazo.', explanation: 'Conecta el hombro con el codo.'},
+		{question: '¿Qué es el húmfdsfero2222?', answer: '22Es un huesodg largo del brazo.', explanation: '2222222Conecta el hombro con el codo.'},
+		{question: '¿3333Qué es el húmfdsfdsfero?', answer: '3333Es un hueso largo del brazo.', explanation: '3333Conecta el hombro con el codo.'},
+                // ... 9 tarjetas más
+            ],
+            'Fisiología': [
+                {question: '¿Función principal del corazón?', answer: 'Bombear sangre.', explanation: 'Suministra oxígeno y nutrientes al cuerpo.'},
+		{question: '¿222Función principal del corazón?', answer: '222Bombear sangre.', explanation: '22Suministra oxígeno y nutrientes al cuerpo.'},
+		{question: '¿333Función principal del corazón?', answer: '333Bombear sangre.', explanation: '333Suministra oxígeno y nutrientes al cuerpo.'},
+                // ... 9 tarjetas más
+            ],
+            'Farmacología': [
+                {question: '¿Qué es un analgésico?', answer: 'Medicamento para aliviar el dolor.', explanation: 'Ejemplos: paracetamol, ibuprofeno.'},
+                // ... 9 tarjetas más
+            ],
+            'Microbiología': [
+                {question: '¿Qué son las bacterias?', answer: 'Microorganismos unicelulares.', explanation: 'Pueden ser beneficiosas o patógenas.'},
+                // ... 9 tarjetas más
+            ]
+        };
+
+        let selectedSet = localStorage.getItem('selectedSet') || 'Anatomía';
+        flashcards = flashcardSets[selectedSet];
 
         // Función para ir atrás
         function goBack() {
@@ -246,14 +270,20 @@
             explanation.className = 'card explanation';
             explanation.innerHTML = `<h2><i class="fas fa-info-circle"></i> ${cardData.explanation}</h2>`;
 
+            // Contenedor de las caras
+            let cardWrapper = document.createElement('div');
+            cardWrapper.className = 'card-wrapper';
+            cardWrapper.style.transform = 'rotateY(0deg)';
+            cardWrapper.appendChild(front);
+            cardWrapper.appendChild(back);
+            cardWrapper.appendChild(explanation);
+
             // Indicador de cara
             let faceIndicator = document.createElement('div');
             faceIndicator.className = 'face-indicator';
             faceIndicator.innerHTML = `<i class="fas fa-question-circle"></i> Pregunta`;
 
-            flashcard.appendChild(front);
-            flashcard.appendChild(back);
-            flashcard.appendChild(explanation);
+            flashcard.appendChild(cardWrapper);
             flashcard.appendChild(faceIndicator);
 
             // Añadir eventos táctiles
@@ -266,7 +296,6 @@
 
         // Cargar flashcards
         function loadFlashcards() {
-            loadDataFromCSV(selectedFile);
             let container = document.getElementById('flashcard-container');
             container.innerHTML = '';
             if (currentCardIndex >= flashcards.length) {
@@ -276,6 +305,8 @@
             let flashcard = createFlashcard(cardData);
             container.appendChild(flashcard);
             updateProgress();
+            // Animación de entrada
+            gsap.from(flashcard, {duration: 0.5, opacity: 0, y: 50});
         }
 
         // Actualizar barra de progreso
@@ -283,19 +314,26 @@
             let progressElement = document.getElementById('progress');
             let progress = ((currentCardIndex + 1) / flashcards.length) * 100;
             progressElement.style.width = progress + '%';
+            // Actualizar progreso en el perfil
+            let currentProfile = JSON.parse(localStorage.getItem('currentProfile')) || null;
+            if (currentProfile) {
+                currentProfile.progress[selectedSet] = currentCardIndex + 1;
+                localStorage.setItem('currentProfile', JSON.stringify(currentProfile));
+            }
         }
 
         // Cambiar de cara
         function flipCard(direction) {
             let flashcard = document.querySelector('.flashcard');
             let faceIndicator = flashcard.querySelector('.face-indicator');
+            let cardWrapper = flashcard.querySelector('.card-wrapper');
             if (direction === 'next') {
                 currentFace = (currentFace + 1) % 3;
             } else {
                 currentFace = (currentFace - 1 + 3) % 3;
             }
-            let rotationY = currentFace * 180;
-            gsap.to(flashcard, {duration: 0.8, rotationY: rotationY, ease: "power2.inOut"});
+            let rotationY = -currentFace * 120;
+            gsap.to(cardWrapper, {duration: 0.8, rotationY: rotationY, ease: "power2.inOut"});
             switch (currentFace) {
                 case 0:
                     faceIndicator.innerHTML = `<i class="fas fa-question-circle"></i> Pregunta`;
@@ -322,10 +360,9 @@
 
         // Clasificar tarjeta
         function classifyCard(level) {
-            let cardKey = `${selectedFile}-${currentCardIndex}`;
+            let cardKey = `${selectedSet}-${currentCardIndex}`;
             classifications[cardKey] = level;
             localStorage.setItem('classifications', JSON.stringify(classifications));
-            // Actualizar estadísticas del perfil
             alert(`Tarjeta clasificada como ${level}`);
         }
 
@@ -358,9 +395,44 @@
             }
         }
 
+        // Función para cambiar entre modos día/noche
+        function toggleTheme() {
+            if (theme === 'day') {
+                document.body.classList.add('night-mode');
+                theme = 'night';
+                document.querySelector('.theme-toggle-button i').classList.remove('fa-moon');
+                document.querySelector('.theme-toggle-button i').classList.add('fa-sun');
+            } else {
+                document.body.classList.remove('night-mode');
+                theme = 'day';
+                document.querySelector('.theme-toggle-button i').classList.remove('fa-sun');
+                document.querySelector('.theme-toggle-button i').classList.add('fa-moon');
+            }
+            localStorage.setItem('theme', theme);
+        }
+
+        // Solicitar pantalla completa
+        function requestFullScreen() {
+            let elem = document.documentElement;
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen();
+            } else if (elem.webkitRequestFullscreen) { /* Safari */
+                elem.webkitRequestFullscreen();
+            } else if (elem.msRequestFullscreen) { /* IE11 */
+                elem.msRequestFullscreen();
+            }
+        }
+
         // Inicialización
         window.onload = () => {
             loadFlashcards();
+            if (theme === 'night') {
+                document.body.classList.add('night-mode');
+                document.querySelector('.theme-toggle-button i').classList.remove('fa-moon');
+                document.querySelector('.theme-toggle-button i').classList.add('fa-sun');
+            }
+            // Solicitar pantalla completa
+            requestFullScreen();
         };
     </script>
 </body>
