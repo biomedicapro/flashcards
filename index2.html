@@ -81,6 +81,13 @@
             perspective: 1000px;
             position: relative;
         }
+        .card-wrapper {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            transform-style: preserve-3d;
+            transition: transform 0.8s;
+        }
         .card {
             width: 100%;
             height: 100%;
@@ -90,13 +97,11 @@
             background: linear-gradient(to bottom, #fff, #f0f0f0);
             box-shadow: 0 5px 15px rgba(0,0,0,0.3);
             backface-visibility: hidden;
-            transition: transform 0.8s;
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 20px;
             box-sizing: border-box;
-            transform-style: preserve-3d;
         }
         .card h2 {
             margin: 0;
@@ -224,32 +229,44 @@
         let flashcardSets = {
             'Anatomía': [
                 {question: '¿Qué es el húmero?', answer: 'Es un hueso largo del brazo.', explanation: 'Conecta el hombro con el codo.'},
-		{question: '¿Qué es el húmfdsfero2222?', answer: '22Es un huesodg largo del brazo.', explanation: '2222222Conecta el hombro con el codo.'},
-		{question: '¿3333Qué es el húmfdsfdsfero?', answer: '3333Es un hueso largo del brazo.', explanation: '3333Conecta el hombro con el codo.'},
-                // ... 9 tarjetas más
+                // ... Añade más tarjetas
             ],
-            'Fisiología': [
-                {question: '¿Función principal del corazón?', answer: 'Bombear sangre.', explanation: 'Suministra oxígeno y nutrientes al cuerpo.'},
-		{question: '¿222Función principal del corazón?', answer: '222Bombear sangre.', explanation: '22Suministra oxígeno y nutrientes al cuerpo.'},
-		{question: '¿333Función principal del corazón?', answer: '333Bombear sangre.', explanation: '333Suministra oxígeno y nutrientes al cuerpo.'},
-                // ... 9 tarjetas más
-            ],
-            'Farmacología': [
-                {question: '¿Qué es un analgésico?', answer: 'Medicamento para aliviar el dolor.', explanation: 'Ejemplos: paracetamol, ibuprofeno.'},
-                // ... 9 tarjetas más
-            ],
-            'Microbiología': [
-                {question: '¿Qué son las bacterias?', answer: 'Microorganismos unicelulares.', explanation: 'Pueden ser beneficiosas o patógenas.'},
-                // ... 9 tarjetas más
-            ]
+            // ... Otros conjuntos
         };
 
         let selectedSet = localStorage.getItem('selectedSet') || 'Anatomía';
-        flashcards = flashcardSets[selectedSet];
+        let reviewLevel = localStorage.getItem('reviewLevel') || null;
+        let currentProfile = JSON.parse(localStorage.getItem('currentProfile')) || null;
 
-        // Función para ir atrás
-        function goBack() {
-            window.location.href = 'index.html';
+        // Cargar las flashcards
+        function loadFlashcards() {
+            flashcards = flashcardSets[selectedSet];
+            if (reviewLevel) {
+                flashcards = flashcards.filter((card, index) => {
+                    let cardKey = `${selectedSet}-${index}`;
+                    return classifications[cardKey] === reviewLevel;
+                });
+            }
+            if (flashcards.length === 0) {
+                alert('No hay tarjetas para mostrar.');
+                window.location.href = 'index.html';
+                return;
+            }
+            currentCardIndex = 0;
+            currentFace = 0;
+            showFlashcard();
+        }
+
+        // Mostrar la flashcard actual
+        function showFlashcard() {
+            let container = document.getElementById('flashcard-container');
+            container.innerHTML = '';
+            let cardData = flashcards[currentCardIndex];
+            let flashcard = createFlashcard(cardData);
+            container.appendChild(flashcard);
+            updateProgress();
+            // Animación de entrada
+            gsap.from(flashcard, {duration: 0.5, opacity: 0, y: 50});
         }
 
         // Función para crear una flashcard
@@ -294,30 +311,14 @@
             return flashcard;
         }
 
-        // Cargar flashcards
-        function loadFlashcards() {
-            let container = document.getElementById('flashcard-container');
-            container.innerHTML = '';
-            if (currentCardIndex >= flashcards.length) {
-                currentCardIndex = 0;
-            }
-            let cardData = flashcards[currentCardIndex];
-            let flashcard = createFlashcard(cardData);
-            container.appendChild(flashcard);
-            updateProgress();
-            // Animación de entrada
-            gsap.from(flashcard, {duration: 0.5, opacity: 0, y: 50});
-        }
-
         // Actualizar barra de progreso
         function updateProgress() {
             let progressElement = document.getElementById('progress');
             let progress = ((currentCardIndex + 1) / flashcards.length) * 100;
             progressElement.style.width = progress + '%';
             // Actualizar progreso en el perfil
-            let currentProfile = JSON.parse(localStorage.getItem('currentProfile')) || null;
-            if (currentProfile) {
-                currentProfile.progress[selectedSet] = currentCardIndex + 1;
+            if (currentProfile && !reviewLevel) {
+                currentProfile.progress[selectedSet] = Math.max(currentProfile.progress[selectedSet], currentCardIndex + 1);
                 localStorage.setItem('currentProfile', JSON.stringify(currentProfile));
             }
         }
@@ -355,12 +356,13 @@
                 currentCardIndex = (currentCardIndex - 1 + flashcards.length) % flashcards.length;
             }
             currentFace = 0;
-            loadFlashcards();
+            showFlashcard();
         }
 
         // Clasificar tarjeta
         function classifyCard(level) {
-            let cardKey = `${selectedSet}-${currentCardIndex}`;
+            let originalIndex = flashcards[currentCardIndex].originalIndex || currentCardIndex;
+            let cardKey = `${selectedSet}-${originalIndex}`;
             classifications[cardKey] = level;
             localStorage.setItem('classifications', JSON.stringify(classifications));
             alert(`Tarjeta clasificada como ${level}`);
@@ -421,6 +423,12 @@
             } else if (elem.msRequestFullscreen) { /* IE11 */
                 elem.msRequestFullscreen();
             }
+        }
+
+        // Función para regresar y limpiar el nivel de revisión
+        function goBack() {
+            localStorage.removeItem('reviewLevel');
+            window.location.href = 'index.html';
         }
 
         // Inicialización
